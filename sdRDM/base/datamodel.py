@@ -579,3 +579,36 @@ class DataModel(pydantic.BaseModel):
             return str(value)
 
         return value
+    
+
+if __name__ == "__main__":
+    lib = DataModel.from_git(url="https://github.com/FAIRChemistry/CaliPytion.git")
+    lib.Calibration.visualize_tree()
+
+    import numpy as np
+
+
+
+
+    # generate test data
+    def poly(x,a,b,c):
+        return a*x / (b+x)
+
+    a=5
+    b=4
+    c=2
+
+    conc = np.linspace(0,10,11)
+    abso = poly(x = conc,a=a,b=b,c=c)
+    data = np.tile(abso, 3).reshape((3,len(conc)))
+
+    for i in range(len(data)):
+        data[i] = data[i] + np.random.normal(1,0.001, len(conc))
+
+    standard = lib.Standard(wavelength=420, concentration=list(conc),
+                        concentration_unit="mmole / l",
+                        absorption = [lib.Series(values=x.tolist()) for x in data])
+
+    calibration = lib.Calibration(reactant_id="s0", pH=7, temperature=37,
+                                temperature_unit="C", standard=[standard])
+    calibration.json()
