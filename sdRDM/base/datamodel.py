@@ -71,7 +71,8 @@ class DataModel(pydantic.BaseModel):
             object = self._traverse_model_by_path(self, path[0])
 
             if isinstance(object, ListPlus):
-                result = object.get(query=target, attr=attribute)  # type: ignore
+                result = object.get(
+                    query=target, attr=attribute)  # type: ignore
 
                 if len(result) == 1:
                     return result[0]
@@ -143,7 +144,8 @@ class DataModel(pydantic.BaseModel):
                 {
                     "repo": self.__repo__,  # type: ignore
                     "commit": self.__commit__,  # type: ignore
-                    "url": self.__repo__.replace(".git", "") + f"/tree/{self.__commit__}",  # type: ignore
+                    # type: ignore
+                    "url": self.__repo__.replace(".git", "") + f"/tree/{self.__commit__}",
                 }
             )  # type: ignore
         except AttributeError:
@@ -166,7 +168,8 @@ class DataModel(pydantic.BaseModel):
                     continue
 
                 nu_data[key] = [
-                    self._check_and_convert_sub(element, exclude_none, convert_h5ds)
+                    self._check_and_convert_sub(
+                        element, exclude_none, convert_h5ds)
                     for element in value
                 ]
 
@@ -226,7 +229,8 @@ class DataModel(pydantic.BaseModel):
                 {
                     "repo": self.__repo__,  # type: ignore
                     "commit": self.__commit__,  # type: ignore
-                    "url": self.__repo__.replace(".git", f"/tree/{self.__commit__}"),  # type: ignore
+                    # type: ignore
+                    "url": self.__repo__.replace(".git", f"/tree/{self.__commit__}"),
                 }
             )
         except AttributeError:
@@ -389,15 +393,13 @@ class DataModel(pydantic.BaseModel):
 
             if url is None:
                 raise ValueError(f"No repository given in __source__")
-            
+
             # Replace git action artifact
             elif url.startswith("git://"):
                 url = url.replace("git://", "https://", 1)
-                
+
             elif not validators.url(url):
                 raise ValueError(f"Given URL '{url}' is not a valid URL.")
-
-    
 
             commit = dataset.get("__source__")["commit"]
             root = dataset.get("__source__")["root"]
@@ -524,7 +526,8 @@ class DataModel(pydantic.BaseModel):
                     classes[field.type_.__name__].add_parent_class(definition)
 
         roots = list(
-            filter(lambda definition: not definition.parent_classes, classes.values())
+            filter(lambda definition: not definition.parent_classes,
+                   classes.values())
         )
 
         return [root.cls for root in roots]
@@ -541,7 +544,8 @@ class DataModel(pydantic.BaseModel):
         blocks = self.convert_to("dataverse", template=template)
 
         if not blocks:
-            raise ValueError("Couldnt convert, no mapping towards Dataverse specified.")
+            raise ValueError(
+                "Couldnt convert, no mapping towards Dataverse specified.")
 
         dataset = Dataset()
         for block in blocks:
@@ -579,3 +583,12 @@ class DataModel(pydantic.BaseModel):
             return str(value)
 
         return value
+
+
+if __name__ == "__main__":
+    url = "https://github.com/EnzymeML/enzymeml-specifications.git"
+    commit = "d4078dbbd5249efa479ea94332cf7067d6c4d2fb"
+
+    enzymeML = DataModel.from_git(url=url, commit=commit)
+
+    print(enzymeML.EnzymeMLDocument.visualize_tree())
