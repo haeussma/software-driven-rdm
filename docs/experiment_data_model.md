@@ -37,7 +37,7 @@
     - Type: string
     - Description: Last name of the creator.
 - email_address
-    - Type: Email
+    - Type: string
     - Description: E-mail address of the creator.
 
 ## Enums
